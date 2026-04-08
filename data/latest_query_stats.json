@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-03-20T08:00:00",
+  "period": "2026-03-10~2026-03-16",
+  "total_count": 10000,
+  "_note": "此为占位数据，等待二娃运行后自动替换",
+  "scene_distribution": [
+    {"scene": "供给推荐-单决策要素", "label": "供给推荐·单要素", "count": 3820, "pct": 38.2, "sample_queries": ["附近的足浴推荐", "星聚会KTV五角场", "人均200以内的按摩"]},
+    {"scene": "供给推荐-泛需求", "label": "供给推荐·泛需求", "count": 2150, "pct": 21.5, "sample_queries": ["周末去哪里玩", "适合情侣约会的地方", "10人团建活动"]},
+    {"scene": "信息咨询-知识问答", "label": "信息咨询·知识问答", "count": 1380, "pct": 13.8, "sample_queries": ["推拿和针灸有什么区别", "新手养猫指南", "面膜可以天天敷吗"]},
+    {"scene": "供给推荐-决策要素个性化", "label": "供给推荐·个性化", "count": 980, "pct": 9.8, "sample_queries": ["不推销办卡的理发店", "能给鹦鹉看病的宠物医院", "可以带孩子去的按摩店"]},
+    {"scene": "信息咨询-供给详情", "label": "信息咨询·供给详情", "count": 640, "pct": 6.4, "sample_queries": ["这家店营业时间", "套餐含不含门票", "店里停车方便吗"]},
+    {"scene": "供给推荐-多决策要素", "label": "供给推荐·多要素", "count": 520, "pct": 5.2, "sample_queries": ["有包间能洗澡技师好的足疗", "4人包厢人均100以内KTV", "新开的评分高的美甲店"]},
+    {"scene": "指令-预订", "label": "指令·预订", "count": 240, "pct": 2.4, "sample_queries": ["帮我预约明天下午2点", "预订那家按摩", "我要预约小确幸"]},
+    {"scene": "闲聊", "label": "闲聊", "count": 150, "pct": 1.5, "sample_queries": ["你好", "你能做什么", "帮我推荐个地方"]},
+    {"scene": "供给推荐-跨行业场景", "label": "供给推荐·跨行业", "count": 70, "pct": 0.7, "sample_queries": ["做完足疗顺便做个美甲", "找个能按摩能吃饭的地方", "亲子游乐加餐厅"]},
+    {"scene": "系统兜底", "label": "系统兜底", "count": 50, "pct": 0.5, "sample_queries": ["你觉得谁会赢", "帮我买彩票", "随便"]}
+  ],
+  "industry_distribution": [
+    {"industry": "休闲娱乐", "count": 2980, "pct": 29.8, "sample_queries": ["附近足浴推荐", "按摩放松一下", "剧本杀推荐"]},
+    {"industry": "丽人", "count": 2340, "pct": 23.4, "sample_queries": ["附近美甲推荐", "烫头发的理发店", "美睫哪家好"]},
+    {"industry": "K歌", "count": 1560, "pct": 15.6, "sample_queries": ["附近KTV", "星聚会价格", "包厢唱歌推荐"]},
+    {"industry": "生活服务", "count": 890, "pct": 8.9, "sample_queries": ["家政保洁", "管道疏通", "搬家公司"]},
+    {"industry": "运动健身", "count": 680, "pct": 6.8, "sample_queries": ["台球馆推荐", "健身中心", "羽毛球场预约"]},
+    {"industry": "宠物", "count": 520, "pct": 5.2, "sample_queries": ["宠物医院推荐", "猫咪绝育", "宠物洗澡"]},
+    {"industry": "亲子", "count": 380, "pct": 3.8, "sample_queries": ["亲子游乐场", "儿童早教", "带孩子玩的地方"]},
+    {"industry": "养车用车", "count": 270, "pct": 2.7, "sample_queries": ["洗车推荐", "汽车维修", "附近加油站"]},
+    {"industry": "教育培训", "count": 200, "pct": 2.0, "sample_queries": ["驾校报名", "英语培训", "绘画课"]},
+    {"industry": "其他", "count": 180, "pct": 1.8, "sample_queries": ["随便推荐", "好玩的地方", "打发时间"]}
+  ]
+}
