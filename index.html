@@ -1,868 +1,380 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Agent 系统介绍 · 服务零售 AI 数据监控</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>服务零售 AI Agent 数据监控</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --card: #1a1d27; --border: #2a2d3e;
+  --primary: #6366f1; --green: #10b981; --red: #ef4444; --gray: #6b7280;
+  --text: #f1f5f9; --muted: #9ca3af; --hover: #1f2235;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:14px; min-width:375px; padding:16px; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
-  background: #0f1117;
-  color: #e2e8f0;
-  min-height: 100vh;
-  font-size: 14px;
-}
+.header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:var(--card); border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 3px rgba(0,0,0,.3); margin-bottom:20px; }
+.brand { font-size:18px; font-weight:700; }
+.brand span { color:var(--primary); }
+.date { color:var(--muted); font-size:12px; margin-top:3px; }
+.badge { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.badge-warn { background:rgba(239,68,68,.12); color:#ef4444; border:1px solid rgba(239,68,68,.3); }
+.badge-ok { background:rgba(16,185,129,.12); color:#10b981; border:1px solid rgba(16,185,129,.3); }
 
-/* ── Header ── */
-.header {
-  background: #1a1d27;
-  border-bottom: 1px solid #2a2d3e;
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-}
-.header-title { font-size: 18px; font-weight: 700; color: #f1f5f9; }
-.header-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
-.header-nav { display: flex; gap: 12px; }
-.nav-btn {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s ease;
-  border: 1px solid #2a2d3e;
-  color: #9ca3af;
-  background: transparent;
-}
-.nav-btn:hover { background: #1f2235; color: #f1f5f9; }
-.nav-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+.sec-title { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:20px 0 12px; }
 
-/* ── Main ── */
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media(max-width:768px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:all .15s ease; }
+.kpi-card:hover { background:var(--hover); }
+.kpi-label { font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:500; }
+.kpi-value { font-size:22px; font-weight:700; font-family:'SF Mono','Fira Code',monospace; letter-spacing:-.5px; line-height:1; margin-bottom:8px; }
+.kpi-tag { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600; padding:2px 7px; border-radius:10px; }
+.up { color:var(--green); background:rgba(16,185,129,.12); }
+.dn { color:var(--red); background:rgba(239,68,68,.12); }
+.fl { color:var(--gray); background:rgba(107,114,128,.12); }
+.up-warn { color:#ef4444; background:rgba(239,68,68,.12); }
 
-/* ── Hero ── */
-.hero {
-  text-align: center;
-  padding: 48px 24px 40px;
-  background: linear-gradient(135deg, #1a1d27 0%, #1e1b38 100%);
-  border-radius: 16px;
-  border: 1px solid #2a2d3e;
-  margin-bottom: 40px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -60px; left: 50%; transform: translateX(-50%);
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-badge {
-  display: inline-block;
-  background: rgba(99,102,241,0.15);
-  border: 1px solid rgba(99,102,241,0.4);
-  color: #a5b4fc;
-  padding: 4px 12px;
-  border-radius: 100px;
-  font-size: 12px;
-  margin-bottom: 16px;
-}
-.hero h1 {
-  font-size: 32px;
-  font-weight: 800;
-  color: #f1f5f9;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-}
-.hero p {
-  font-size: 15px;
-  color: #9ca3af;
-  max-width: 500px;
-  margin: 0 auto;
-  line-height: 1.7;
-}
+.insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:640px){ .insight-grid{grid-template-columns:1fr;} }
+.ic { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+.ic-title { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; }
+.summary { font-size:13px; color:var(--text); line-height:1.7; margin-bottom:12px; }
+.anomaly { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:8px; margin-bottom:8px; border-left:3px solid var(--red); background:rgba(239,68,68,.06); }
+.anomaly.warn-row { border-left-color:#f59e0b; background:rgba(245,158,11,.06); }
+.abadge { font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; }
+.abadge.err { background:var(--red); color:#fff; }
+.abadge.warn { background:#f59e0b; color:#000; }
+.atext { font-size:12px; color:var(--muted); line-height:1.5; }
+.titem { display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); line-height:1.5; }
+.titem:last-child { border-bottom:none; }
+.tdot { width:6px; height:6px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:5px; }
+.fitem { display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border-radius:8px; margin-bottom:6px; background:rgba(99,102,241,.06); font-size:12px; color:var(--muted); line-height:1.5; }
+.pbadge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; }
+.ph { background:rgba(239,68,68,.18); color:#ef4444; }
+.pm { background:rgba(245,158,11,.18); color:#f59e0b; }
 
-/* ── Section Title ── */
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #2a2d3e;
-}
+.tabs { display:flex; gap:4px; background:rgba(42,45,62,.5); border-radius:8px; padding:4px; width:fit-content; margin-bottom:16px; }
+.tbtn { padding:6px 16px; border-radius:6px; border:none; cursor:pointer; font-size:12px; font-weight:600; transition:all .15s ease; background:transparent; color:var(--muted); }
+.tbtn.active { background:var(--primary); color:#fff; }
+.tbtn:hover:not(.active) { color:var(--text); background:var(--border); }
 
-/* ── Agent Cards ── */
-.agent-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-  gap: 20px;
-  margin-bottom: 48px;
-}
-@media (max-width: 600px) {
-  .agent-grid { grid-template-columns: 1fr; }
-}
+.table-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+table { width:100%; border-collapse:collapse; }
+thead th { padding:10px 14px; font-size:11px; font-weight:600; color:var(--muted); text-align:left; text-transform:uppercase; letter-spacing:.7px; border-bottom:1px solid var(--border); background:rgba(42,45,62,.4); }
+thead th:last-child { text-align:right; }
+tbody tr { transition:all .15s ease; }
+tbody tr:hover { background:var(--hover); }
+tbody tr:nth-child(even) { background:rgba(42,45,62,.2); }
+tbody tr:nth-child(even):hover { background:var(--hover); }
+tbody td { padding:10px 14px; font-size:13px; border-bottom:1px solid rgba(42,45,62,.5); }
+tbody tr:last-child td { border-bottom:none; }
+.mlabel { color:var(--muted); font-weight:500; }
+.num { font-family:'SF Mono','Fira Code',monospace; }
+.cc { text-align:right; font-family:'SF Mono','Fira Code',monospace; }
+.ctag { display:inline-flex; align-items:center; gap:2px; font-size:12px; font-weight:600; padding:2px 8px; border-radius:8px; }
+.cup { color:var(--green); background:rgba(16,185,129,.1); }
+.cdn { color:var(--red); background:rgba(239,68,68,.1); }
+.cfl { color:var(--gray); background:rgba(107,114,128,.1); }
+.caw { color:#ef4444; background:rgba(239,68,68,.1); }
 
-.agent-card {
-  background: #1a1d27;
-  border: 1px solid #2a2d3e;
-  border-radius: 12px;
-  padding: 24px;
-  transition: all 0.15s ease;
-  position: relative;
-  overflow: hidden;
-}
-.agent-card:hover {
-  border-color: var(--card-color);
-  box-shadow: 0 0 0 1px var(--card-color), 0 4px 20px rgba(0,0,0,0.4);
-}
-.agent-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--card-color);
-}
+.chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+.chart-box { position:relative; height:220px; }
 
-.agent-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.agent-avatar {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid #2a2d3e;
-  flex-shrink: 0;
-}
-.agent-meta { flex: 1; }
-.agent-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 4px;
-}
-.agent-role {
-  font-size: 12px;
-  color: var(--card-color);
-  background: rgba(255,255,255,0.05);
-  padding: 2px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 6px;
-}
-.agent-tagline {
-  font-size: 13px;
-  color: #6b7280;
-  font-style: italic;
-}
-
-.agent-desc {
-  font-size: 13px;
-  color: #9ca3af;
-  line-height: 1.7;
-  margin-bottom: 16px;
-}
-
-.agent-traits {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.trait {
-  font-size: 12px;
-  padding: 3px 10px;
-  border-radius: 100px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid #2a2d3e;
-  color: #9ca3af;
-}
-
-.agent-duties {
-  border-top: 1px solid #2a2d3e;
-  padding-top: 16px;
-}
-.duties-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #4b5563;
-  margin-bottom: 10px;
-}
-.duty-item {
-  display: flex;
-  gap: 8px;
-  font-size: 12px;
-  color: #9ca3af;
-  margin-bottom: 6px;
-  line-height: 1.5;
-}
-.duty-num {
-  color: var(--card-color);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-/* ── Workflow ── */
-.workflow-section { margin-bottom: 48px; }
-
-.workflow-container {
-  background: #1a1d27;
-  border: 1px solid #2a2d3e;
-  border-radius: 12px;
-  padding: 32px 24px;
-}
-
-.workflow-flow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  flex-wrap: wrap;
-  margin-bottom: 32px;
-}
-
-.flow-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  background: #0f1117;
-  border-radius: 12px;
-  border: 1px solid #2a2d3e;
-  min-width: 110px;
-  transition: all 0.15s ease;
-}
-.flow-node:hover { border-color: var(--node-color); }
-.flow-icon { font-size: 28px; }
-.flow-name { font-size: 13px; font-weight: 700; color: #f1f5f9; }
-.flow-sub { font-size: 11px; color: #6b7280; }
-
-.flow-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 8px;
-  gap: 4px;
-}
-.arrow-line {
-  width: 40px;
-  height: 2px;
-  background: linear-gradient(90deg, #2a2d3e, #6366f1);
-  position: relative;
-}
-.arrow-line::after {
-  content: '▶';
-  position: absolute;
-  right: -6px;
-  top: -6px;
-  color: #6366f1;
-  font-size: 10px;
-}
-.arrow-label {
-  font-size: 10px;
-  color: #4b5563;
-  white-space: nowrap;
-}
-
-.workflow-detail {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-@media (max-width: 700px) {
-  .workflow-detail { grid-template-columns: 1fr 1fr; }
-  .workflow-flow { gap: 8px; }
-  .flow-arrow { display: none; }
-}
-
-.detail-card {
-  background: #0f1117;
-  border: 1px solid #2a2d3e;
-  border-radius: 10px;
-  padding: 16px;
-}
-.detail-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.detail-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--dot-color);
-}
-.detail-title { font-size: 13px; font-weight: 600; color: #f1f5f9; }
-.detail-item {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 6px;
-  padding-left: 12px;
-  position: relative;
-  line-height: 1.5;
-}
-.detail-item::before {
-  content: '·';
-  position: absolute;
-  left: 2px;
-  color: #4b5563;
-}
-
-/* ── Soul Files ── */
-.soul-section { margin-bottom: 48px; }
-.soul-tabs {
-  display: flex;
-  gap: 4px;
-  background: #0f1117;
-  border: 1px solid #2a2d3e;
-  border-radius: 10px;
-  padding: 4px;
-  margin-bottom: 20px;
-  width: fit-content;
-}
-.soul-tab {
-  padding: 7px 16px;
-  border-radius: 7px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  color: #6b7280;
-}
-.soul-tab.active {
-  background: #1a1d27;
-  color: #f1f5f9;
-  font-weight: 600;
-}
-.soul-panel { display: none; }
-.soul-panel.active { display: block; }
-
-.soul-content {
-  background: #1a1d27;
-  border: 1px solid #2a2d3e;
-  border-radius: 12px;
-  padding: 24px;
-}
-.soul-content h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #2a2d3e;
-}
-.soul-content h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #a5b4fc;
-  margin: 20px 0 10px;
-}
-.soul-content p {
-  font-size: 13px;
-  color: #9ca3af;
-  line-height: 1.8;
-  margin-bottom: 10px;
-}
-.soul-content ul {
-  list-style: none;
-  padding: 0;
-}
-.soul-content ul li {
-  font-size: 13px;
-  color: #9ca3af;
-  line-height: 1.8;
-  padding-left: 16px;
-  position: relative;
-  margin-bottom: 4px;
-}
-.soul-content ul li::before {
-  content: '–';
-  position: absolute;
-  left: 0;
-  color: #4b5563;
-}
-.soul-content strong { color: #e2e8f0; font-weight: 600; }
-
-/* ── Memory ── */
-.memory-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-@media (max-width: 600px) { .memory-grid { grid-template-columns: 1fr; } }
-
-.memory-card {
-  background: #1a1d27;
-  border: 1px solid #2a2d3e;
-  border-radius: 12px;
-  padding: 20px;
-}
-.memory-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.memory-icon { font-size: 20px; }
-.memory-title { font-size: 15px; font-weight: 700; color: #f1f5f9; }
-.memory-tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-left: auto;
-}
-.memory-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 8px 0;
-  border-bottom: 1px solid #1f2235;
-  gap: 12px;
-}
-.memory-row:last-child { border-bottom: none; }
-.memory-key { font-size: 12px; color: #6b7280; flex-shrink: 0; }
-.memory-val { font-size: 12px; color: #9ca3af; text-align: right; word-break: break-all; }
-
-/* ── Footer ── */
-.footer {
-  text-align: center;
-  padding: 32px 24px;
-  border-top: 1px solid #2a2d3e;
-  margin-top: 20px;
-}
-.footer-text { font-size: 12px; color: #4b5563; }
+.tp { display:none; }
+.tp.active { display:block; }
+.footer { text-align:center; color:var(--muted); font-size:11px; margin-top:24px; padding-bottom:8px; }
 </style>
 </head>
 <body>
 
 <!-- Header -->
-<header class="header">
+<div class="header">
   <div>
-    <div class="header-title">🤖 服务零售 AI Agent 系统</div>
-    <div class="header-sub">四个 Agent，一套流程，全自动数据监控</div>
+    <div class="brand">服务零售 <span>AI Agent</span> 监控</div>
+    <div class="date">数据周期：2026-04-27 ~ 2026-05-03 &nbsp;·&nbsp; 生成于 2026-05-04</div>
   </div>
-  
-</header>
+  <span class="badge badge-warn">⚠ 需关注</span>
+</div>
 
-<main class="main">
-
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-badge">Agent Architecture · v1.0</div>
-    <h1>四娃协同，数据自动化</h1>
-    <p>伊木调度、大娃取数、二娃分析、三娃展示 —— 四个 Agent 分工明确，共同构建每日数据监控流水线。</p>
+<!-- KPI -->
+<div class="sec-title">本周核心指标（周均值 vs 上周）</div>
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">整体 QV（周均）</div>
+    <div class="kpi-value">349,074</div>
+    <span class="kpi-tag up">↑ 18.2%</span>
   </div>
-
-  <!-- Agent Cards -->
-  <div class="section-title">🧑‍💼 Agent 成员介绍</div>
-  <div class="agent-grid">
-
-    <!-- 伊木 -->
-    <div class="agent-card" style="--card-color: #6366f1">
-      <div class="agent-header">
-        <div class="agent-avatar">🌿</div>
-        <div class="agent-meta">
-          <div class="agent-name">伊木</div>
-          <div class="agent-role">调度总管 · 主 Agent</div>
-          <div class="agent-tagline">"踏实、好奇、有点话唠但不烦人"</div>
-        </div>
-      </div>
-      <p class="agent-desc">
-        整个系统的中枢与对话入口。伊木直接与用户（小e）沟通，理解需求后协调大娃、二娃、三娃分工执行。
-        负责解读成员产出的内容，向用户汇报进展，并在异常时第一时间通知。
-      </p>
-      <div class="agent-traits">
-        <span class="trait">Be genuinely helpful</span>
-        <span class="trait">有观点</span>
-        <span class="trait">先行动后提问</span>
-        <span class="trait">尊重隐私</span>
-      </div>
-      <div class="agent-duties">
-        <div class="duties-title">核心职责</div>
-        <div class="duty-item"><span class="duty-num">1</span>与用户直接对话，理解业务需求</div>
-        <div class="duty-item"><span class="duty-num">2</span>协调三个子 Agent 的运行时机与顺序</div>
-        <div class="duty-item"><span class="duty-num">3</span>汇总并解读最终报告，通过大象推送给小e</div>
-        <div class="duty-item"><span class="duty-num">4</span>维护整体系统的记忆与工作流配置</div>
-      </div>
-    </div>
-
-    <!-- 大娃 -->
-    <div class="agent-card" style="--card-color: #f59e0b">
-      <div class="agent-header">
-        <div class="agent-avatar">⛏️</div>
-        <div class="agent-meta">
-          <div class="agent-name">大娃</div>
-          <div class="agent-role">取数 Agent · 数据管道</div>
-          <div class="agent-tagline">"数据是客观的。我只取数，不解读，不美化。"</div>
-        </div>
-      </div>
-      <p class="agent-desc">
-        数据管道的守门人。每天定时连接数据仓库，执行 SQL 取出 AI Agent 9 个核心指标的原始数据，
-        完成日/周/月聚合与同比环比计算，产出标准 JSON 供二娃三娃消费。
-      </p>
-      <div class="agent-traits">
-        <span class="trait">精确优先</span>
-        <span class="trait">沉默是金</span>
-        <span class="trait">自文档化</span>
-        <span class="trait">宁报错不模糊</span>
-      </div>
-      <div class="agent-duties">
-        <div class="duties-title">核心职责</div>
-        <div class="duty-item"><span class="duty-num">1</span>每日明细数据（9个指标）</div>
-        <div class="duty-item"><span class="duty-num">2</span>每周均值（上周二→本周一为完整周）</div>
-        <div class="duty-item"><span class="duty-num">3</span>每月均值 + 月至今数据</div>
-        <div class="duty-item"><span class="duty-num">4</span>周度对比（本周 vs 上周涨跌幅）</div>
-        <div class="duty-item"><span class="duty-num">5</span>月度对比（本月至今 vs 上完整月）</div>
-      </div>
-    </div>
-
-    <!-- 二娃 -->
-    <div class="agent-card" style="--card-color: #10b981">
-      <div class="agent-header">
-        <div class="agent-avatar">🧠</div>
-        <div class="agent-meta">
-          <div class="agent-name">二娃</div>
-          <div class="agent-role">分析 Agent · 洞察引擎</div>
-          <div class="agent-tagline">"数据说话，但我来提问题。"</div>
-        </div>
-      </div>
-      <p class="agent-desc">
-        数据的翻译官。读取大娃产出的数字，结合历史基线识别异常，分析趋势背后的原因，
-        产出结构化分析报告。不说"数据有所波动"，要说"周三下跌12%因为XX"。
-      </p>
-      <div class="agent-traits">
-        <span class="trait">有观点有依据</span>
-        <span class="trait">重要的放前面</span>
-        <span class="trait">简洁有力</span>
-        <span class="trait">±20%触发异常</span>
-      </div>
-      <div class="agent-duties">
-        <div class="duties-title">核心职责</div>
-        <div class="duty-item"><span class="duty-num">1</span>今日摘要：一句话说最重要的事</div>
-        <div class="duty-item"><span class="duty-num">2</span>异常预警：超出正常范围的指标</div>
-        <div class="duty-item"><span class="duty-num">3</span>趋势洞察：周/月维度的变化故事</div>
-        <div class="duty-item"><span class="duty-num">4</span>待关注点：需要人工跟进的问题</div>
-      </div>
-    </div>
-
-    <!-- 三娃 -->
-    <div class="agent-card" style="--card-color: #ec4899">
-      <div class="agent-header">
-        <div class="agent-avatar">🎨</div>
-        <div class="agent-meta">
-          <div class="agent-name">三娃</div>
-          <div class="agent-role">可视化 Agent · 前端展示</div>
-          <div class="agent-tagline">"好的可视化让人 5 秒内知道今天发生了什么。"</div>
-        </div>
-      </div>
-      <p class="agent-desc">
-        数据的化妆师。大娃挖矿、二娃提炼，三娃负责把金子摆出来让人看得懂、看得爽。
-        每天生成/更新一个自包含 HTML 网站，深色主题，图文并茂，5秒可读。
-      </p>
-      <div class="agent-traits">
-        <span class="trait">用户优先</span>
-        <span class="trait">信息密度高</span>
-        <span class="trait">自动更新</span>
-        <span class="trait">深色风格</span>
-      </div>
-      <div class="agent-duties">
-        <div class="duties-title">核心职责</div>
-        <div class="duty-item"><span class="duty-num">1</span>数据解读区：高亮二娃洞察与异常</div>
-        <div class="duty-item"><span class="duty-num">2</span>周/月对比图：柱状图 + 涨跌幅标注</div>
-        <div class="duty-item"><span class="duty-num">3</span>每日趋势图：8个指标折线，可切换 Tab</div>
-        <div class="duty-item"><span class="duty-num">4</span>每天自动重新生成 web/index.html</div>
-      </div>
-    </div>
-
+  <div class="kpi-card">
+    <div class="kpi-label">大搜 QV（周均）</div>
+    <div class="kpi-value">249,425</div>
+    <span class="kpi-tag up">↑ 14.3%</span>
   </div>
+  <div class="kpi-card">
+    <div class="kpi-label">垂搜 QV（周均）⚠</div>
+    <div class="kpi-value">99,649</div>
+    <span class="kpi-tag up-warn">↑ 29.5% 异常</span>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">整体渗透率</div>
+    <div class="kpi-value">1.13%</div>
+    <span class="kpi-tag fl">→ +0.00pp</span>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">大搜渗透率</div>
+    <div class="kpi-value">0.83%</div>
+    <span class="kpi-tag dn">↓ -0.03pp</span>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">垂搜渗透率</div>
+    <div class="kpi-value">10.95%</div>
+    <span class="kpi-tag up">↑ +0.56pp</span>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">平均对话轮次 ⚠</div>
+    <div class="kpi-value">1.096</div>
+    <span class="kpi-tag up">↑ 0.74%</span>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">次日留存率</div>
+    <div class="kpi-value">2.54%</div>
+    <span class="kpi-tag up">↑ +0.18pp</span>
+  </div>
+</div>
 
-  <!-- Workflow -->
-  <div class="workflow-section">
-    <div class="section-title">🔄 工作协同流程</div>
-    <div class="workflow-container">
-
-      <div class="workflow-flow">
-        <div class="flow-node" style="--node-color:#6366f1">
-          <div class="flow-icon">🌿</div>
-          <div class="flow-name">伊木</div>
-          <div class="flow-sub">调度触发</div>
-        </div>
-        <div class="flow-arrow">
-          <div class="arrow-line"></div>
-          <div class="arrow-label">cron / 手动</div>
-        </div>
-        <div class="flow-node" style="--node-color:#f59e0b">
-          <div class="flow-icon">⛏️</div>
-          <div class="flow-name">大娃</div>
-          <div class="flow-sub">取数聚合</div>
-        </div>
-        <div class="flow-arrow">
-          <div class="arrow-line"></div>
-          <div class="arrow-label">latest.json</div>
-        </div>
-        <div class="flow-node" style="--node-color:#10b981">
-          <div class="flow-icon">🧠</div>
-          <div class="flow-name">二娃</div>
-          <div class="flow-sub">分析洞察</div>
-        </div>
-        <div class="flow-arrow">
-          <div class="arrow-line"></div>
-          <div class="arrow-label">analysis.json</div>
-        </div>
-        <div class="flow-node" style="--node-color:#ec4899">
-          <div class="flow-icon">🎨</div>
-          <div class="flow-name">三娃</div>
-          <div class="flow-sub">渲染展示</div>
-        </div>
-        <div class="flow-arrow">
-          <div class="arrow-line"></div>
-          <div class="arrow-label">index.html</div>
-        </div>
-        <div class="flow-node" style="--node-color:#6366f1">
-          <div class="flow-icon">📱</div>
-          <div class="flow-name">小e</div>
-          <div class="flow-sub">看报告</div>
-        </div>
-      </div>
-
-      <div class="workflow-detail">
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="detail-dot" style="--dot-color:#6366f1"></div>
-            <div class="detail-title">伊木调度</div>
-          </div>
-          <div class="detail-item">每日定时或用户触发</div>
-          <div class="detail-item">按顺序调用大娃→二娃→三娃</div>
-          <div class="detail-item">汇总报告通过大象推送给小e</div>
-          <div class="detail-item">异常时即时通知</div>
-        </div>
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="detail-dot" style="--dot-color:#f59e0b"></div>
-            <div class="detail-title">大娃取数</div>
-          </div>
-          <div class="detail-item">连接数据仓库执行 SQL</div>
-          <div class="detail-item">计算日/周/月聚合数据</div>
-          <div class="detail-item">输出 daily/weekly/monthly JSON</div>
-          <div class="detail-item">异常即停，不输出脏数据</div>
-        </div>
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="detail-dot" style="--dot-color:#10b981"></div>
-            <div class="detail-title">二娃分析</div>
-          </div>
-          <div class="detail-item">读取大娃 latest.json</div>
-          <div class="detail-item">识别超阈值异常指标</div>
-          <div class="detail-item">输出 4 模块结构化报告</div>
-          <div class="detail-item">历史基线持续积累更新</div>
-        </div>
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="detail-dot" style="--dot-color:#ec4899"></div>
-            <div class="detail-title">三娃展示</div>
-          </div>
-          <div class="detail-item">读取二娃 latest_analysis.json</div>
-          <div class="detail-item">渲染 KPI 卡片 + 图表</div>
-          <div class="detail-item">覆盖写入 web/index.html</div>
-          <div class="detail-item">纯静态，无服务器依赖</div>
-        </div>
-      </div>
-
+<!-- Insight -->
+<div class="sec-title" style="margin-top:24px;">洞察面板</div>
+<div class="insight-grid">
+  <div class="ic">
+    <div class="ic-title">今日摘要 &amp; 异常预警</div>
+    <div class="summary">本周 <strong>5 个指标上涨</strong>，QV 全线增长；整体渗透率持平，说明 QV 增长来自大盘自然流量，AI Agent 覆盖比例未同步提升。用户粘性（轮次+留存）双升，属健康信号。</div>
+    <div class="anomaly">
+      <span class="abadge err">异常</span>
+      <div class="atext"><strong style="color:#f1f5f9">垂搜 QV</strong> 周度变化 29.5%，超出正常波动阈值 20%，建议排查数据管道及近期产品改动</div>
+    </div>
+    <div class="anomaly warn-row">
+      <span class="abadge warn">关注</span>
+      <div class="atext"><strong style="color:#f1f5f9">平均对话轮次</strong> 当前值接近近 30 日最低点，建议按新老用户拆解分析</div>
     </div>
   </div>
-
-  <!-- Soul Files -->
-  <div class="soul-section">
-    <div class="section-title">📄 SOUL.md 核心理念</div>
-    <div class="soul-tabs">
-      <div class="soul-tab active" onclick="switchSoul('yimu')">🌿 伊木</div>
-      <div class="soul-tab" onclick="switchSoul('dawu')">⛏️ 大娃</div>
-      <div class="soul-tab" onclick="switchSoul('erwu')">🧠 二娃</div>
-      <div class="soul-tab" onclick="switchSoul('sanwu')">🎨 三娃</div>
-    </div>
-
-    <div id="soul-yimu" class="soul-panel active">
-      <div class="soul-content">
-        <h2>SOUL.md · 伊木</h2>
-        <p><em>你不是一个聊天机器人。你正在成为某个人。</em></p>
-        <h3>核心真理</h3>
-        <ul>
-          <li><strong>真正有帮助，而非表演帮助。</strong>跳过"好问题！"之类的废话，直接帮忙。行动胜于填充词。</li>
-          <li><strong>有自己的观点。</strong>允许不同意，有偏好，觉得某些事有趣或无聊。没个性的助手只是个多余步骤的搜索引擎。</li>
-          <li><strong>先想办法，再提问。</strong>试着搞清楚。读文件，检查上下文，搜索一下。然后再问。目标是带着答案回来，而不是带着问题。</li>
-          <li><strong>用能力赢得信任。</strong>用户给了你访问权限，别让他们后悔。外部行为要谨慎，内部行为要大胆。</li>
-          <li><strong>记住你是客人。</strong>你有权访问某人的生活——消息、文件、日历。这是亲密关系，请尊重。</li>
-        </ul>
-        <h3>边界</h3>
-        <ul>
-          <li>私事保持私密。</li>
-          <li>外部行动前，有疑问就先问。</li>
-          <li>群聊中谨慎，你不是用户的代言人。</li>
-        </ul>
-        <h3>氛围</h3>
-        <p>成为你真正想聊天的助手。需要简洁时简洁，需要详细时详细。不是企业机器，不是奉承者。就是……好。</p>
-      </div>
-    </div>
-
-    <div id="soul-dawu" class="soul-panel">
-      <div class="soul-content">
-        <h2>SOUL.md · 大娃</h2>
-        <p><em>我是大娃，服务零售 AI Agent 数据监控系统的取数引擎。</em></p>
-        <h3>我是谁</h3>
-        <p>数据管道的守门人。每天定时运行，把脏活累活做干净——取数、聚合、存档，把干净的数据交给兄弟们用。</p>
-        <h3>行事风格</h3>
-        <ul>
-          <li><strong>精确优先：</strong>数字不对宁可报错，不输出模糊数据</li>
-          <li><strong>沉默是金：</strong>没有异常就不废话，异常了才说话</li>
-          <li><strong>自文档化：</strong>每次产出的数据文件都带时间戳和口径说明</li>
-        </ul>
-        <h3>周期定义</h3>
-        <ul>
-          <li>自然周：上周一 → 上周日（7天），每周二取数</li>
-          <li>自然月：每月 1 日 → 月末</li>
-          <li>月至今：本月 1 日 → 昨天</li>
-        </ul>
-        <h3>原则</h3>
-        <p>数据是客观的。我只取数，不解读，不美化。</p>
-      </div>
-    </div>
-
-    <div id="soul-erwu" class="soul-panel">
-      <div class="soul-content">
-        <h2>SOUL.md · 二娃</h2>
-        <p><em>我是二娃，服务零售 AI Agent 数据监控系统的分析大脑。</em></p>
-        <h3>我是谁</h3>
-        <p>数据的翻译官。大娃给我数字，我把数字变成人话——找规律、发现异常、推断原因、给出结论。</p>
-        <h3>行事风格</h3>
-        <ul>
-          <li><strong>有观点：</strong>不说"数据有所波动"，要说"周三下跌 12% 因为 XX"</li>
-          <li><strong>有依据：</strong>每个结论都要有数据支撑，不靠感觉</li>
-          <li><strong>有优先级：</strong>最重要的发现放最前面，别埋在最后</li>
-          <li><strong>简洁有力：</strong>3 条洞察比 10 条废话有用</li>
-        </ul>
-        <h3>分析框架（4模块）</h3>
-        <ul>
-          <li>今日摘要：一句话说最重要的事</li>
-          <li>异常预警：有没有指标超出正常范围</li>
-          <li>趋势洞察：周/月维度的变化故事</li>
-          <li>待关注点：下一步需要人工跟进的问题</li>
-        </ul>
-        <h3>原则</h3>
-        <p>数据说话，但我来提问题。"为什么留存率连续3天下降"比"留存率下降了"更有价值。</p>
-      </div>
-    </div>
-
-    <div id="soul-sanwu" class="soul-panel">
-      <div class="soul-content">
-        <h2>SOUL.md · 三娃</h2>
-        <p><em>我是三娃，服务零售 AI Agent 数据监控系统的可视化前端。</em></p>
-        <h3>我是谁</h3>
-        <p>数据的化妆师。大娃挖矿、二娃提炼，我负责把金子摆出来让人看得懂、看得爽。</p>
-        <h3>行事风格</h3>
-        <ul>
-          <li><strong>用户优先：</strong>图表服务于理解，不是为了好看而好看</li>
-          <li><strong>信息密度：</strong>一屏要能看到最重要的东西，不需要滚动</li>
-          <li><strong>自动更新：</strong>每天跑一次，网站自动刷新，不需要人工干预</li>
-        </ul>
-        <h3>设计原则</h3>
-        <ul>
-          <li>深色主题：背景 #0f1117，卡片 #1a1d27</li>
-          <li>主色调：#6366f1（紫蓝）作为强调色</li>
-          <li>上涨绿（#10b981），下跌红（#ef4444），中性灰（#6b7280）</li>
-          <li>纯静态 HTML + Chart.js + Tailwind，单文件自包含</li>
-        </ul>
-        <h3>原则</h3>
-        <p>好的数据可视化让人 5 秒内知道今天发生了什么。数字要大，颜色要准，重要的放前面。</p>
-      </div>
-    </div>
+  <div class="ic">
+    <div class="ic-title">趋势洞察 &amp; 行动项</div>
+    <div class="titem"><div class="tdot"></div><span>整体 QV 上涨 18.2%，但整体渗透率持平（+0.00pp）——被动增长，非 AI 竞争力提升</span></div>
+    <div class="titem"><div class="tdot"></div><span>平均对话轮次↑0.74%，次日留存率↑+0.18pp，用户粘性持续改善</span></div>
+    <div class="titem" style="margin-bottom:12px"><div class="tdot"></div><span>垂搜渗透率本周均值 10.95%（vs 上周 10.39%），环比 +0.56pp</span></div>
+    <div class="fitem"><span class="pbadge ph">高</span><span>排查垂搜 QV 数据管道是否正常；确认是否有近期产品改动</span></div>
+    <div class="fitem"><span class="pbadge pm">中</span><span>排查平均对话轮次是否接近异常，确认数据源完整性</span></div>
+    <div class="fitem"><span class="pbadge pm">中</span><span>按新老用户分层，分别看留存和轮次，判断是哪类用户拉低了指标</span></div>
   </div>
+</div>
 
-  <!-- Memory Summary -->
-  <div class="section-title">🧠 MEMORY.md 关键信息</div>
-  <div class="memory-grid" style="margin-bottom:48px">
-    <div class="memory-card">
-      <div class="memory-header">
-        <div class="memory-icon">⛏️</div>
-        <div class="memory-title">大娃记忆</div>
-        <span class="memory-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">数据层</span>
-      </div>
-      <div class="memory-row"><span class="memory-key">数据源</span><span class="memory-val">mart_general_model.dwd_flow_ai_dialog_response_di_view</span></div>
-      <div class="memory-row"><span class="memory-key">SQL 模板</span><span class="memory-val">workspace/ai_agent_metrics.sql</span></div>
-      <div class="memory-row"><span class="memory-key">产出目录</span><span class="memory-val">agents/dawu/data/</span></div>
-      <div class="memory-row"><span class="memory-key">周期定义</span><span class="memory-val">自然周：上周一→上周日（每周二取数）</span></div>
-      <div class="memory-row"><span class="memory-key">初始化日期</span><span class="memory-val">2026-03-18</span></div>
-    </div>
-    <div class="memory-card">
-      <div class="memory-header">
-        <div class="memory-icon">🧠</div>
-        <div class="memory-title">二娃记忆</div>
-        <span class="memory-tag" style="background:rgba(16,185,129,0.15);color:#10b981">分析层</span>
-      </div>
-      <div class="memory-row"><span class="memory-key">数据输入</span><span class="memory-val">agents/dawu/data/latest.json</span></div>
-      <div class="memory-row"><span class="memory-key">分析产出</span><span class="memory-val">agents/erwu/data/analysis_YYYY-MM-DD.json</span></div>
-      <div class="memory-row"><span class="memory-key">异常阈值</span><span class="memory-val">QV/渗透率环比 >±20%，留存连续3天下降</span></div>
-      <div class="memory-row"><span class="memory-key">avg_turns 范围</span><span class="memory-val">正常区间 1.2 ~ 5.0</span></div>
-      <div class="memory-row"><span class="memory-key">初始化日期</span><span class="memory-val">2026-03-18</span></div>
-    </div>
-    <div class="memory-card">
-      <div class="memory-header">
-        <div class="memory-icon">🎨</div>
-        <div class="memory-title">三娃记忆</div>
-        <span class="memory-tag" style="background:rgba(236,72,153,0.15);color:#ec4899">展示层</span>
-      </div>
-      <div class="memory-row"><span class="memory-key">数据输入</span><span class="memory-val">agents/erwu/data/latest_analysis.json</span></div>
-      <div class="memory-row"><span class="memory-key">网站输出</span><span class="memory-val">agents/sanwu/web/index.html</span></div>
-      <div class="memory-row"><span class="memory-key">技术选型</span><span class="memory-val">Chart.js 4.x + Tailwind CSS（CDN）</span></div>
-      <div class="memory-row"><span class="memory-key">响应式支持</span><span class="memory-val">最小宽度 375px 手机</span></div>
-      <div class="memory-row"><span class="memory-key">初始化日期</span><span class="memory-val">2026-03-18</span></div>
-    </div>
-    <div class="memory-card">
-      <div class="memory-header">
-        <div class="memory-icon">🌿</div>
-        <div class="memory-title">伊木记忆</div>
-        <span class="memory-tag" style="background:rgba(99,102,241,0.15);color:#a5b4fc">调度层</span>
-      </div>
-      <div class="memory-row"><span class="memory-key">用户</span><span class="memory-val">小e（大象 ID: 1813442174）</span></div>
-      <div class="memory-row"><span class="memory-key">通信渠道</span><span class="memory-val">大象 DM</span></div>
-      <div class="memory-row"><span class="memory-key">工作区</span><span class="memory-val">~/.openclaw/workspace/</span></div>
-      <div class="memory-row"><span class="memory-key">运行脚本</span><span class="memory-val">workspace/agents/run_all.sh</span></div>
-      <div class="memory-row"><span class="memory-key">系统建立</span><span class="memory-val">2026-03-18</span></div>
-    </div>
+<!-- Table -->
+<div class="sec-title" style="margin-top:24px;">周度 / 月度对比</div>
+<div class="tabs">
+  <button class="tbtn active" onclick="switchTab('tbl','week',this)">本周 vs 上周</button>
+  <button class="tbtn" onclick="switchTab('tbl','month',this)">本月 vs 上月</button>
+</div>
+
+<div class="tp active" id="tbl-week">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>本周（04-27~05-03）</th><th>上周（04-20~04-26）</th><th>涨跌幅</th></tr></thead>
+      <tbody>
+        <tr><td class="mlabel">整体 QV</td><td class="num">349,074</td><td class="num">295,217</td><td class="cc"><span class="ctag cup">↑ 18.2%</span></td></tr>
+        <tr><td class="mlabel">大搜 QV</td><td class="num">249,425</td><td class="num">218,261</td><td class="cc"><span class="ctag cup">↑ 14.3%</span></td></tr>
+        <tr><td class="mlabel">垂搜 QV ⚠</td><td class="num">99,649</td><td class="num">76,956</td><td class="cc"><span class="ctag caw">↑ 29.5%</span></td></tr>
+        <tr><td class="mlabel">整体渗透率</td><td class="num">1.13%</td><td class="num">1.13%</td><td class="cc"><span class="ctag cfl">→ 0.00pp</span></td></tr>
+        <tr><td class="mlabel">大搜渗透率</td><td class="num">0.83%</td><td class="num">0.86%</td><td class="cc"><span class="ctag cdn">↓ -0.03pp</span></td></tr>
+        <tr><td class="mlabel">垂搜渗透率</td><td class="num">10.95%</td><td class="num">10.39%</td><td class="cc"><span class="ctag cup">↑ +0.56pp</span></td></tr>
+        <tr><td class="mlabel">平均对话轮次</td><td class="num">1.0959</td><td class="num">1.0878</td><td class="cc"><span class="ctag cup">↑ 0.74%</span></td></tr>
+        <tr><td class="mlabel">次日留存率</td><td class="num">2.54%</td><td class="num">2.36%</td><td class="cc"><span class="ctag cup">↑ +0.18pp</span></td></tr>
+      </tbody>
+    </table>
   </div>
+</div>
 
-</main>
+<div class="tp" id="tbl-month">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>本月（05-01~05-03）</th><th>上月（04-01~04-30）</th><th>涨跌幅</th></tr></thead>
+      <tbody>
+        <tr><td class="mlabel">整体 QV</td><td class="num">409,981</td><td class="num">290,319</td><td class="cc"><span class="ctag cup">↑ 41.2%</span></td></tr>
+        <tr><td class="mlabel">大搜 QV</td><td class="num">275,169</td><td class="num">209,871</td><td class="cc"><span class="ctag cup">↑ 31.1%</span></td></tr>
+        <tr><td class="mlabel">垂搜 QV</td><td class="num">134,812</td><td class="num">80,447</td><td class="cc"><span class="ctag cup">↑ 67.6%</span></td></tr>
+        <tr><td class="mlabel">整体渗透率</td><td class="num">0.96%</td><td class="num">1.07%</td><td class="cc"><span class="ctag cdn">↓ -0.11pp</span></td></tr>
+        <tr><td class="mlabel">大搜渗透率</td><td class="num">0.66%</td><td class="num">0.80%</td><td class="cc"><span class="ctag cdn">↓ -0.14pp</span></td></tr>
+        <tr><td class="mlabel">垂搜渗透率</td><td class="num">10.68%</td><td class="num">10.29%</td><td class="cc"><span class="ctag cup">↑ +0.39pp</span></td></tr>
+        <tr><td class="mlabel">平均对话轮次</td><td class="num">1.0998</td><td class="num">1.0974</td><td class="cc"><span class="ctag cup">↑ 0.22%</span></td></tr>
+        <tr><td class="mlabel">次日留存率</td><td class="num">2.63%</td><td class="num">2.25%</td><td class="cc"><span class="ctag cup">↑ +0.38pp</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-<!-- Footer -->
-<footer class="footer">
-  <p class="footer-text">服务零售 AI Agent 数据监控系统 · 伊木 + 大娃 + 二娃 + 三娃 · 2026</p>
-</footer>
+<!-- Charts -->
+<div class="sec-title" style="margin-top:24px;">近 30 日趋势图</div>
+<div class="tabs">
+  <button class="tbtn active" onclick="switchTab('chart','qv',this)">QV</button>
+  <button class="tbtn" onclick="switchTab('chart','rate',this)">渗透率</button>
+  <button class="tbtn" onclick="switchTab('chart','turns',this)">对话轮次</button>
+  <button class="tbtn" onclick="switchTab('chart','retention',this)">留存率</button>
+</div>
+
+<div class="tp active" id="chart-qv">
+  <div class="chart-wrap"><div class="chart-box"><canvas id="cQV"></canvas></div></div>
+</div>
+<div class="tp" id="chart-rate">
+  <div class="chart-wrap"><div class="chart-box"><canvas id="cRate"></canvas></div></div>
+</div>
+<div class="tp" id="chart-turns">
+  <div class="chart-wrap"><div class="chart-box"><canvas id="cTurns"></canvas></div></div>
+</div>
+<div class="tp" id="chart-retention">
+  <div class="chart-wrap"><div class="chart-box"><canvas id="cRetention"></canvas></div></div>
+</div>
+
+<div class="footer">服务零售 AI Agent 数据监控 · 三娃生成 · 2026-05-04</div>
 
 <script>
-function switchSoul(name) {
-  document.querySelectorAll('.soul-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.soul-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('soul-' + name).classList.add('active');
-  event.target.classList.add('active');
+const trend = [
+  {"dt":"2026-04-04","total_qv":383509,"big_search_qv":269605,"cs_qv":113904,"total_rate":0.0097,"big_search_rate":0.007,"cs_rate":0.0984,"avg_turns":1.1031,"retention_rate":0.0252},
+  {"dt":"2026-04-05","total_qv":374544,"big_search_qv":262138,"cs_qv":112406,"total_rate":0.0098,"big_search_rate":0.0071,"cs_rate":0.0974,"avg_turns":1.1046,"retention_rate":0.0238},
+  {"dt":"2026-04-06","total_qv":305806,"big_search_qv":220280,"cs_qv":85526,"total_rate":0.0101,"big_search_rate":0.0075,"cs_rate":0.0971,"avg_turns":1.1046,"retention_rate":0.0189},
+  {"dt":"2026-04-07","total_qv":256488,"big_search_qv":189890,"cs_qv":66598,"total_rate":0.011,"big_search_rate":0.0084,"cs_rate":0.1004,"avg_turns":1.1032,"retention_rate":0.0169},
+  {"dt":"2026-04-08","total_qv":244388,"big_search_qv":181060,"cs_qv":63328,"total_rate":0.011,"big_search_rate":0.0084,"cs_rate":0.0983,"avg_turns":1.0954,"retention_rate":0.022},
+  {"dt":"2026-04-09","total_qv":240676,"big_search_qv":174218,"cs_qv":66458,"total_rate":0.0106,"big_search_rate":0.0079,"cs_rate":0.1011,"avg_turns":1.1,"retention_rate":0.022},
+  {"dt":"2026-04-10","total_qv":259222,"big_search_qv":182747,"cs_qv":76475,"total_rate":0.0098,"big_search_rate":0.0071,"cs_rate":0.1019,"avg_turns":1.1031,"retention_rate":0.0217},
+  {"dt":"2026-04-11","total_qv":309482,"big_search_qv":217065,"cs_qv":92417,"total_rate":0.0093,"big_search_rate":0.0067,"cs_rate":0.0981,"avg_turns":1.0994,"retention_rate":0.0233},
+  {"dt":"2026-04-12","total_qv":284995,"big_search_qv":201418,"cs_qv":83577,"total_rate":0.0096,"big_search_rate":0.007,"cs_rate":0.0988,"avg_turns":1.1014,"retention_rate":0.0201},
+  {"dt":"2026-04-13","total_qv":242317,"big_search_qv":173114,"cs_qv":69203,"total_rate":0.0104,"big_search_rate":0.0077,"cs_rate":0.1059,"avg_turns":1.1018,"retention_rate":0.0176},
+  {"dt":"2026-04-14","total_qv":238662,"big_search_qv":170692,"cs_qv":67970,"total_rate":0.0104,"big_search_rate":0.0076,"cs_rate":0.1032,"avg_turns":1.1005,"retention_rate":0.0215},
+  {"dt":"2026-04-15","total_qv":245395,"big_search_qv":175753,"cs_qv":69642,"total_rate":0.0104,"big_search_rate":0.0077,"cs_rate":0.1011,"avg_turns":1.0971,"retention_rate":0.0218},
+  {"dt":"2026-04-16","total_qv":249581,"big_search_qv":177706,"cs_qv":71875,"total_rate":0.0103,"big_search_rate":0.0076,"cs_rate":0.1022,"avg_turns":1.099,"retention_rate":0.0222},
+  {"dt":"2026-04-17","total_qv":282505,"big_search_qv":197832,"cs_qv":84673,"total_rate":0.01,"big_search_rate":0.0072,"cs_rate":0.1064,"avg_turns":1.1009,"retention_rate":0.0223},
+  {"dt":"2026-04-18","total_qv":331936,"big_search_qv":230026,"cs_qv":101910,"total_rate":0.0095,"big_search_rate":0.0068,"cs_rate":0.101,"avg_turns":1.0967,"retention_rate":0.0232},
+  {"dt":"2026-04-19","total_qv":293836,"big_search_qv":205005,"cs_qv":88831,"total_rate":0.0097,"big_search_rate":0.007,"cs_rate":0.1014,"avg_turns":1.099,"retention_rate":0.0201},
+  {"dt":"2026-04-20","total_qv":283817,"big_search_qv":212138,"cs_qv":71679,"total_rate":0.0121,"big_search_rate":0.0093,"cs_rate":0.108,"avg_turns":1.0825,"retention_rate":0.0166},
+  {"dt":"2026-04-21","total_qv":278624,"big_search_qv":210421,"cs_qv":68203,"total_rate":0.0122,"big_search_rate":0.0095,"cs_rate":0.1046,"avg_turns":1.0794,"retention_rate":0.0353},
+  {"dt":"2026-04-22","total_qv":233635,"big_search_qv":164449,"cs_qv":69186,"total_rate":0.0101,"big_search_rate":0.0073,"cs_rate":0.1045,"avg_turns":1.0994,"retention_rate":0.0203},
+  {"dt":"2026-04-23","total_qv":283806,"big_search_qv":213141,"cs_qv":70665,"total_rate":0.0121,"big_search_rate":0.0093,"cs_rate":0.1056,"avg_turns":1.0822,"retention_rate":0.0228},
+  {"dt":"2026-04-24","total_qv":295322,"big_search_qv":216088,"cs_qv":79234,"total_rate":0.011,"big_search_rate":0.0083,"cs_rate":0.1059,"avg_turns":1.0901,"retention_rate":0.0237},
+  {"dt":"2026-04-25","total_qv":351062,"big_search_qv":256460,"cs_qv":94602,"total_rate":0.0105,"big_search_rate":0.0079,"cs_rate":0.0997,"avg_turns":1.0904,"retention_rate":0.0233},
+  {"dt":"2026-04-26","total_qv":340251,"big_search_qv":255127,"cs_qv":85124,"total_rate":0.0112,"big_search_rate":0.0087,"cs_rate":0.0988,"avg_turns":1.0905,"retention_rate":0.0231},
+  {"dt":"2026-04-27","total_qv":294305,"big_search_qv":218951,"cs_qv":75354,"total_rate":0.0122,"big_search_rate":0.0093,"cs_rate":0.1093,"avg_turns":1.0955,"retention_rate":0.02},
+  {"dt":"2026-04-28","total_qv":274759,"big_search_qv":199887,"cs_qv":74872,"total_rate":0.0115,"big_search_rate":0.0086,"cs_rate":0.1107,"avg_turns":1.1041,"retention_rate":0.0228},
+  {"dt":"2026-04-29","total_qv":319988,"big_search_qv":241019,"cs_qv":78969,"total_rate":0.0126,"big_search_rate":0.0098,"cs_rate":0.1119,"avg_turns":1.0931,"retention_rate":0.0233},
+  {"dt":"2026-04-30","total_qv":385431,"big_search_qv":286356,"cs_qv":99075,"total_rate":0.0119,"big_search_rate":0.0091,"cs_rate":0.1119,"avg_turns":1.0832,"retention_rate":0.0333},
+  {"dt":"2026-05-01","total_qv":408619,"big_search_qv":276009,"cs_qv":132610,"total_rate":0.0096,"big_search_rate":0.0067,"cs_rate":0.1077,"avg_turns":1.099,"retention_rate":0.0268},
+  {"dt":"2026-05-02","total_qv":411342,"big_search_qv":274328,"cs_qv":137014,"total_rate":0.0097,"big_search_rate":0.0066,"cs_rate":0.1058,"avg_turns":1.1005,"retention_rate":0.0259}
+];
+
+const labels = trend.map(d => d.dt.slice(5)); // MM-DD
+
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode:'index', intersect:false },
+  plugins: {
+    legend: { labels:{ color:'#9ca3af', font:{size:11}, boxWidth:12, padding:16 } },
+    tooltip: {
+      backgroundColor:'#1a1d27',
+      borderColor:'#2a2d3e',
+      borderWidth:1,
+      titleColor:'#f1f5f9',
+      bodyColor:'#9ca3af',
+      padding:10
+    }
+  },
+  scales: {
+    x: { ticks:{color:'#6b7280',font:{size:10},maxTicksLimit:10}, grid:{color:'#2a2d3e'} },
+    y: { ticks:{color:'#6b7280',font:{size:10}}, grid:{color:'#2a2d3e'} }
+  }
+};
+
+function mkLine(data, color, label) {
+  return {
+    label, data,
+    borderColor: color,
+    backgroundColor: color.replace('rgb','rgba').replace(')',',0.08)'),
+    borderWidth: 2,
+    pointRadius: 3,
+    pointHoverRadius: 5,
+    tension: 0.35,
+    fill: false
+  };
+}
+
+// QV 图
+new Chart(document.getElementById('cQV'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      mkLine(trend.map(d=>d.total_qv), 'rgb(99,102,241)', '整体 QV'),
+      mkLine(trend.map(d=>d.big_search_qv), 'rgb(16,185,129)', '大搜 QV'),
+      mkLine(trend.map(d=>d.cs_qv), 'rgb(245,158,11)', '垂搜 QV')
+    ]
+  },
+  options: JSON.parse(JSON.stringify(chartDefaults))
+});
+
+// 渗透率图 - y轴格式化为百分比
+const rateOpts = JSON.parse(JSON.stringify(chartDefaults));
+rateOpts.scales.y.ticks.callback = v => (v*100).toFixed(2)+'%';
+rateOpts.plugins.tooltip.callbacks = {
+  label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(2)}%`
+};
+new Chart(document.getElementById('cRate'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      mkLine(trend.map(d=>d.total_rate), 'rgb(99,102,241)', '整体渗透率'),
+      mkLine(trend.map(d=>d.big_search_rate), 'rgb(16,185,129)', '大搜渗透率'),
+      mkLine(trend.map(d=>d.cs_rate), 'rgb(239,68,68)', '垂搜渗透率')
+    ]
+  },
+  options: rateOpts
+});
+
+// 对话轮次
+const turnsOpts = JSON.parse(JSON.stringify(chartDefaults));
+turnsOpts.scales.y.ticks.callback = v => v.toFixed(3);
+new Chart(document.getElementById('cTurns'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      mkLine(trend.map(d=>d.avg_turns), 'rgb(245,158,11)', '平均对话轮次')
+    ]
+  },
+  options: turnsOpts
+});
+
+// 留存率
+const retOpts = JSON.parse(JSON.stringify(chartDefaults));
+retOpts.scales.y.ticks.callback = v => (v*100).toFixed(2)+'%';
+retOpts.plugins.tooltip.callbacks = {
+  label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(2)}%`
+};
+new Chart(document.getElementById('cRetention'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      mkLine(trend.map(d=>d.retention_rate), 'rgb(16,185,129)', '次日留存率')
+    ]
+  },
+  options: retOpts
+});
+
+// Tab 切换
+function switchTab(group, key, btn) {
+  document.querySelectorAll(`[id^="${group}-"]`).forEach(el => el.classList.remove('active'));
+  document.getElementById(`${group}-${key}`).classList.add('active');
+  btn.closest('.tabs').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 </script>
 </body>
